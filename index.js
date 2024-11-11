@@ -31,3 +31,7 @@ function removeBranding() {
 }
 
 removeBranding();
+
+// Setting the interval
+const INTERVAL_MS = 100;
+setInterval(removeBranding, INTERVAL_MS);

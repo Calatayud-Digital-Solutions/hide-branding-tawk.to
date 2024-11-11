@@ -9,6 +9,7 @@ A lightweight JavaScript solution to customize the appearance of Tawk.to chat wi
 - Removes right icon
 - Improves chat panel scrolling
 - Works with multiple chat iframes on the same page
+- Automatically reapplies styles using an interval timer
 
 ## Usage
 
@@ -17,10 +18,15 @@ The script automatically runs when included in your page. It will:
 1. Create necessary CSS rules to hide branding elements
 2. Apply the styles to all chat iframes present on the page
 3. Handle potential cross-origin iframe access issues safely
+4. Continuously check and reapply styles using an interval
 
 ```javascript
-// The function can also be called manually if needed
+// The function can be called manually if needed
 removeBranding();
+
+// The script automatically sets up an interval to reapply styles
+const INTERVAL_MS = 100;
+setInterval(removeBranding, INTERVAL_MS);
 ```
 
 ## How it Works
@@ -32,6 +38,7 @@ The script performs the following operations:
 3. Identifies all chat iframes on the page
 4. Safely injects the styles into each iframe's document
 5. Includes error handling for cross-origin restrictions
+6. Sets up an interval to periodically reapply styles, ensuring they persist even if the chat widget refreshes
 
 ## Customization
 
@@ -44,6 +51,12 @@ const cssRules = `
     .tawk-icon-right { display: none !important }
     .tawk-main-panel .tawk-chat-panel { overflow-y: auto !important }
 `;
+```
+
+You can also adjust the interval timing by modifying the `INTERVAL_MS` constant:
+
+```javascript
+const INTERVAL_MS = 100; // Time in milliseconds between style checks
 ```
 
 ## Contributing
