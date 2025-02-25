@@ -6,6 +6,7 @@ function removeBranding() {
 		.tawk-dropdown.tawk-toolbar-menu { display: none !important }
 		.tawk-icon-right { display: none !important }
 		.tawk-main-panel .tawk-chat-panel { overflow-y: auto !important }
+		.tawk-card-inverse > div:first-child { display: none !important }
 	`;
 
 	// Create style element
