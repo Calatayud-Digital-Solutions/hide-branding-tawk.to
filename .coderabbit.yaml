@@ -2,6 +2,13 @@
 # This configuration will be applied to all repositories in the organization
 
 version: 1
+auto_review:
+  enabled: true
+  auto_incremental_review: true
+base_branches:
+  - main
+  - develop
+  - staging
 early_access: false
 enable_free_tier: true
 disable_review_status: false

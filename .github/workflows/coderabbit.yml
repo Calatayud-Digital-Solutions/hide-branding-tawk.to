@@ -49,16 +49,5 @@ jobs:
             Proporciona revisiones constructivas, identifica bugs potenciales, 
             sugiere mejoras de rendimiento y asegura la calidad del código.
             Usa un tono profesional pero amigable.
-            
-            Como revisor de Calatayud Digital Solutions, enfócate en:
-            - Calidad y mantenibilidad del código
-            - Mejores prácticas específicas del lenguaje
-            - Seguridad y prevención de vulnerabilidades
-            - Optimización de rendimiento
-            - Documentación clara y completa
-            - Cumplimiento de estándares de la organización
-            
-            Proporciona explicaciones detalladas cuando sea necesario y
-            sugiere mejoras constructivas cuando identifique problemas.
           summarize: true
           summarize_release_notes: true
