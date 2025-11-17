@@ -122,5 +122,53 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               title,
-              body
+              body,
+              assignees: [context.actor]
             })
+
+  push_review:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Prepare diff
+        id: diff
+        run: |
+          git diff --unified=0 HEAD~1..HEAD > diff.txt || true
+          lines=$(wc -l < diff.txt || echo 0)
+          echo "lines=$lines" >> $GITHUB_OUTPUT
+      - name: Generate AI review for push
+        id: ai
+        if: steps.diff.outputs.lines != '0'
+        run: |
+          body=$(jq -Rs . < diff.txt)
+          sysmsg="Review the following Git diff and provide actionable suggestions in English. Focus on logic bugs, security, performance, readability, maintainability. Structure by file and change. Keep concise bullet points."
+          payload=$(jq -n --arg body "$body" --arg sys "$sysmsg" '{model:"gpt-4o-mini",messages:[{role:"system",content:$sys},{role:"user",content:$body}]}' )
+          curl -s -X POST https://api.openai.com/v1/chat/completions \
+            -H "Authorization: Bearer ${{ secrets.OPENAI_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d "$payload" > response.json
+          review=$(jq -r '.choices[0].message.content' response.json)
+          echo "body<<EOF" >> $GITHUB_OUTPUT
+          echo "$review" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      - name: Create issue with AI review (push)
+        if: steps.diff.outputs.lines != '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
+            const title = `AI code review (push) on ${process.env.GITHUB_REF_NAME}`
+            const body = `Run: ${runUrl}\n\n${process.env.REVIEW_BODY || ''}`
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              assignees: [context.actor]
+            })
+        env:
+          REVIEW_BODY: ${{ steps.ai.outputs.body }}
