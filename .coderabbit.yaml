@@ -1,0 +1,236 @@
+# CodeRabbit Configuration for Calatayud Digital Solutions
+# This configuration will be applied to all repositories in the organization
+
+version: 1
+early_access: false
+enable_free_tier: true
+disable_review_status: false
+
+# Review settings
+review:
+  # High-level review settings
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  
+  # Automated review settings
+  automated_reviews: true
+  auto_review: true
+  
+  # When to trigger reviews
+  request_changes_workflow: true
+  high_level_summary_walkthrough: true
+  
+  # Review filters
+  path_filters:
+    - "**/*.js"
+    - "**/*.jsx"
+    - "**/*.ts"
+    - "**/*.tsx"
+    - "**/*.vue"
+    - "**/*.py"
+    - "**/*.java"
+    - "**/*.cs"
+    - "**/*.php"
+    - "**/*.rb"
+    - "**/*.go"
+    - "**/*.rs"
+    - "**/*.cpp"
+    - "**/*.c"
+    - "**/*.h"
+    - "**/*.css"
+    - "**/*.scss"
+    - "**/*.html"
+    - "**/*.xml"
+    - "**/*.json"
+    - "**/*.yaml"
+    - "**/*.yml"
+    - "**/*.md"
+    - "**/*.txt"
+    - "!**/*.min.js"
+    - "!**/*.min.css"
+    - "!**/node_modules/**"
+    - "!**/vendor/**"
+    - "!**/dist/**"
+    - "!**/build/**"
+    - "!**/.git/**"
+  
+  # Path instructions for different file types
+  path_instructions:
+    - path: "**/*.js"
+      instructions: |
+        Review JavaScript code for:
+        - ES6+ best practices
+        - Proper error handling
+        - Security vulnerabilities
+        - Performance optimizations
+        - Code readability and maintainability
+    - path: "**/*.ts"
+      instructions: |
+        Review TypeScript code for:
+        - Type safety and proper typing
+        - Interface definitions
+        - Generic usage
+        - Strict mode compliance
+        - Proper error handling
+    - path: "**/*.vue"
+      instructions: |
+        Review Vue.js components for:
+        - Component structure and organization
+        - Props validation
+        - Event handling
+        - State management
+        - Performance optimizations
+    - path: "**/*.py"
+      instructions: |
+        Review Python code for:
+        - PEP 8 compliance
+        - Proper docstrings
+        - Error handling
+        - Security best practices
+        - Performance considerations
+    - path: "**/*.php"
+      instructions: |
+        Review PHP code for:
+        - PSR standards compliance
+        - Security vulnerabilities (SQL injection, XSS)
+        - Proper error handling
+        - Code organization
+        - Performance optimizations
+    - path: "**/*.md"
+      instructions: |
+        Review documentation for:
+        - Clarity and completeness
+        - Proper formatting
+        - Grammar and spelling
+        - Code examples accuracy
+        - Update instructions
+
+# Chat settings
+chat:
+  auto_reply: true
+  create_issue: true
+  language: es
+
+# Language settings (Spanish for Calatayud Digital Solutions)
+language: es
+
+# Knowledge base
+knowledge_base:
+  opt_out: false
+  
+# Tools configuration
+tools:
+  eslint:
+    enabled: true
+  prettier:
+    enabled: true
+  rubocop:
+    enabled: true
+  phpstan:
+    enabled: true
+  pylint:
+    enabled: true
+  black:
+    enabled: true
+  
+# Review instructions in Spanish
+es:
+  high_level_summary: |
+    Proporciona un resumen de alto nivel de los cambios realizados en este PR.
+    Identifica los problemas potenciales y sugiere mejoras.
+  
+  review_instructions: |
+    Revisa el código buscando:
+    - Errores de lógica y bugs potenciales
+    - Problemas de seguridad
+    - Violaciones de las mejores prácticas
+    - Problemas de rendimiento
+    - Problemas de legibilidad y mantenibilidad
+    - Cumplimiento de estándares de código
+    
+    Proporciona sugerencias constructivas y explicaciones claras.
+    Usa un tono profesional pero amigable.
+    
+  walkthrough: |
+    Proporciona un recorrido por los cambios más importantes.
+    Explica qué hace cada cambio y por qué es necesario.
+    Identifica posibles efectos secundarios.
+
+# Additional review settings
+review_settings:
+  # Review on specific events
+  on_push: true
+  on_pull_request: true
+  on_pull_request_open: true
+  on_pull_request_sync: true
+  
+  # Review depth
+  review_depth: detailed
+  
+  # Number of files to review in detail
+  max_files_to_review_in_detail: 10
+  
+  # Skip large files
+  skip_large_files: true
+  large_file_threshold: 1000
+  
+  # Review comments
+  review_comments: true
+  inline_comments: true
+  
+  # Suggest improvements
+  suggest_improvements: true
+  
+  # Auto-fix suggestions
+  auto_fix: true
+  
+  # Security focus
+  security_focus: true
+  
+  # Performance focus
+  performance_focus: true
+
+# Notifications
+notifications:
+  enabled: true
+  channels:
+    - github
+    - email
+  
+# Workflow settings
+workflow:
+  # Run on push to main/master branches
+  push_branches:
+    - main
+    - master
+    - develop
+    - staging
+  
+  # Run on PR to these branches
+  pull_request_branches:
+    - main
+    - master
+    - develop
+    - staging
+  
+  # Skip draft PRs
+  skip_draft_prs: false
+  
+  # Review after tests pass
+  review_after_tests: true
+  
+# Repository settings
+repository:
+  # Apply to all repositories
+  apply_to_all: true
+  
+  # Repository-specific settings (can be overridden per repo)
+  default_branch_protection: true
+  
+  # Code owners
+  require_code_owners_review: false
+  
+  # Minimum reviewers
+  minimum_reviewers: 1

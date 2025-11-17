@@ -1,0 +1,64 @@
+name: CodeRabbit AI Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - main
+      - master
+      - develop
+      - staging
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Run CodeRabbit Review
+        uses: coderabbitai/ai-pr-reviewer@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        with:
+          debug: false
+          review_simple_changes: false
+          review_comment_lgtm: false
+          openai_light_model: gpt-4
+          openai_heavy_model: gpt-4
+          language: es
+          path_filters: |
+            !**/*.min.js
+            !**/*.min.css
+            !**/node_modules/**
+            !**/vendor/**
+            !**/dist/**
+            !**/build/**
+            !**/.git/**
+          system_message: |
+            Eres un ingeniero de software senior que revisa código en español.
+            Proporciona revisiones constructivas, identifica bugs potenciales, 
+            sugiere mejoras de rendimiento y asegura la calidad del código.
+            Usa un tono profesional pero amigable.
+            
+            Como revisor de Calatayud Digital Solutions, enfócate en:
+            - Calidad y mantenibilidad del código
+            - Mejores prácticas específicas del lenguaje
+            - Seguridad y prevención de vulnerabilidades
+            - Optimización de rendimiento
+            - Documentación clara y completa
+            - Cumplimiento de estándares de la organización
+            
+            Proporciona explicaciones detalladas cuando sea necesario y
+            sugiere mejoras constructivas cuando identifique problemas.
+          summarize: true
+          summarize_release_notes: true
