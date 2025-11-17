@@ -120,7 +120,7 @@ chat:
   create_issue: true
   language: en
 
-# Language settings (Spanish for Calatayud Digital Solutions)
+# Language settings (English for Calatayud Digital Solutions)
 language: en
 
 # Knowledge base
@@ -142,12 +142,12 @@ tools:
   black:
     enabled: true
   
-# Review instructions in Spanish
+# Review instructions in English
 en:
   high_level_summary: |
     Provide a high-level summary of the changes in this PR.
     Identify potential issues and suggest improvements.
-
+  
   review_instructions: |
     Review the code for:
     - Logic errors and potential bugs
@@ -156,10 +156,10 @@ en:
     - Performance concerns
     - Readability and maintainability
     - Compliance with coding standards
-
+    
     Provide constructive suggestions and clear explanations.
     Use a professional yet friendly tone.
-
+  
   walkthrough: |
     Provide a walkthrough of the most important changes.
     Explain what each change does and why it is necessary.
