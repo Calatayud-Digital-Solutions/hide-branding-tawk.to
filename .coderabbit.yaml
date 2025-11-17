@@ -118,10 +118,10 @@ review:
 chat:
   auto_reply: true
   create_issue: true
-  language: es
+  language: en
 
 # Language settings (Spanish for Calatayud Digital Solutions)
-language: es
+language: en
 
 # Knowledge base
 knowledge_base:
@@ -143,27 +143,27 @@ tools:
     enabled: true
   
 # Review instructions in Spanish
-es:
+en:
   high_level_summary: |
-    Proporciona un resumen de alto nivel de los cambios realizados en este PR.
-    Identifica los problemas potenciales y sugiere mejoras.
-  
+    Provide a high-level summary of the changes in this PR.
+    Identify potential issues and suggest improvements.
+
   review_instructions: |
-    Revisa el código buscando:
-    - Errores de lógica y bugs potenciales
-    - Problemas de seguridad
-    - Violaciones de las mejores prácticas
-    - Problemas de rendimiento
-    - Problemas de legibilidad y mantenibilidad
-    - Cumplimiento de estándares de código
-    
-    Proporciona sugerencias constructivas y explicaciones claras.
-    Usa un tono profesional pero amigable.
-    
+    Review the code for:
+    - Logic errors and potential bugs
+    - Security issues and vulnerabilities
+    - Best practices violations
+    - Performance concerns
+    - Readability and maintainability
+    - Compliance with coding standards
+
+    Provide constructive suggestions and clear explanations.
+    Use a professional yet friendly tone.
+
   walkthrough: |
-    Proporciona un recorrido por los cambios más importantes.
-    Explica qué hace cada cambio y por qué es necesario.
-    Identifica posibles efectos secundarios.
+    Provide a walkthrough of the most important changes.
+    Explain what each change does and why it is necessary.
+    Identify possible side effects.
 
 # Additional review settings
 review_settings:
