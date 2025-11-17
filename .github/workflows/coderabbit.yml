@@ -73,3 +73,54 @@ jobs:
             Rama: ${{ github.ref }}
             Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
             Causa posible: revisar logs del job 'review'.
+
+  notify_summary:
+    runs-on: ubuntu-latest
+    needs: review
+    if: always()
+    steps:
+      - name: Send run summary email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server: ${{ secrets.SMTP_SERVER }}
+          port: ${{ secrets.SMTP_PORT }}
+          secure: true
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "CodeRabbit run status in ${{ github.repository }}: ${{ needs.review.result || 'unknown' }}"
+          to: ${{ secrets.ALERT_EMAIL_TO }}
+          from: ${{ secrets.ALERT_EMAIL_FROM }}
+          body: |
+            Workflow: ${{ github.workflow }}
+            Evento: ${{ github.event_name }}
+            Rama: ${{ github.ref }}
+            Resultado job review: ${{ needs.review.result }}
+            Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+  push_issue:
+    runs-on: ubuntu-latest
+    needs: review
+    if: github.event_name == 'push'
+    steps:
+      - name: Create issue with push review summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const result = '${{ needs.review.result }}'
+            const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
+            const title = `CodeRabbit push review on ${process.env.GITHUB_REF_NAME} (${result || 'unknown'})`
+            const body = [
+              `Workflow: ${process.env.GITHUB_WORKFLOW}`,
+              `Event: ${process.env.GITHUB_EVENT_NAME}`,
+              `Branch: ${process.env.GITHUB_REF}`,
+              `Run: ${runUrl}`,
+              `\nNotes:`,
+              `- Push runs do not have PR context; inline comments are available only on PRs.`,
+              `- Use PRs for detailed inline feedback; pushes will include email and this summary.`
+            ].join('\n')
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body
+            })
