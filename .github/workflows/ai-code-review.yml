@@ -1,0 +1,112 @@
+name: AI Code Review
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+      - staging
+
+permissions:
+  contents: write
+  issues: write
+  checks: write
+
+env:
+  MODEL: gpt-4o-mini
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    env:
+      PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING: 1
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install dependencies (skip postinstall scripts)
+        run: npm ci --no-audit --no-fund --ignore-scripts
+      - name: Run unit tests
+        run: npm test -s
+
+  push_review:
+    runs-on: ubuntu-latest
+    needs: tests
+    if: github.event_name == 'push' && !contains(github.event.head_commit.message, 'Merge')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Prepare diff
+        id: diff
+        run: |
+          git diff --unified=0 HEAD~1..HEAD > diff.txt || true
+          lines=$(wc -l < diff.txt || echo 0)
+          echo "lines=$lines" >> $GITHUB_OUTPUT
+      - name: Generate AI review for push
+        id: ai
+        if: steps.diff.outputs.lines != '0'
+        run: |
+          set -euo pipefail
+          command -v jq >/dev/null 2>&1 || { echo "jq not found" >&2; exit 1; }
+          body=$(jq -Rs . < diff.txt)
+          sysmsg="Review the following Git diff and provide actionable suggestions in Spanish. Focus on logic bugs, security, performance, readability, maintainability. Structure by file and change. Keep concise bullet points."
+          payload=$(jq -n --arg body "$body" --arg sys "$sysmsg" --arg model "${{ env.MODEL }}" '{model:$model,messages:[{role:"system",content:$sys},{role:"user",content:$body}]}' )
+          http_status=$(curl -s -o response.json -w '%{http_code}' -X POST https://api.openai.com/v1/chat/completions \
+            -H "Authorization: Bearer ${{ secrets.OPENAI_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d "$payload")
+          if [ "$http_status" != "200" ]; then
+            echo "OpenAI API request failed with status $http_status" >&2
+            cat response.json >&2 || true
+            exit 1
+          fi
+          review=$(jq -r '.choices[0].message.content' response.json)
+          echo "body<<EOF" >> $GITHUB_OUTPUT
+          echo "$review" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      - name: Assess review signal
+        id: signal
+        if: steps.diff.outputs.lines != '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = process.env.REVIEW_BODY || ''
+            const signal = (body.length > 400) || /Security|Bug|Vulnerability|Performance|Maintainability|Error/i.test(body)
+            core.setOutput('is_ok', signal ? 'true' : 'false')
+        env:
+          REVIEW_BODY: ${{ steps.ai.outputs.body }}
+      - name: Create check run with AI review (push)
+        if: steps.diff.outputs.lines != '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner
+            const repo = context.repo.repo
+            const name = 'AI Code Review (push)'
+            const head_sha = context.sha
+            const output = {
+              title: 'AI Review Summary',
+              summary: `Push review on ${process.env.GITHUB_REF_NAME}`,
+              text: (process.env.REVIEW_BODY || '').slice(0, 65000)
+            }
+            await github.rest.checks.create({
+              owner,
+              repo,
+              name,
+              head_sha,
+              status: 'completed',
+              conclusion: 'neutral',
+              output
+            })
+        env:
+          REVIEW_BODY: ${{ steps.ai.outputs.body }}
