@@ -1,0 +1,78 @@
+name: LintGPT on push
+
+on:
+  push:
+    branches:
+      - '**'   # acepta cualquier rama
+
+jobs:
+  lintgpt:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # necesario para comentar el commit
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install LintGPT
+        run: npm install lintgpt
+
+      - name: Detect changed files
+        id: changed
+        run: |
+          BEFORE_SHA="${{ github.event.before }}"
+          CURRENT_SHA="${{ github.sha }}"
+
+          if [ -z "$BEFORE_SHA" ] || [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            # Primer push o sin referencia previa: usa todos los ficheros del repo
+            FILES="$(git ls-files | tr '\n' ' ')"
+          else
+            FILES="$(git diff --name-only "$BEFORE_SHA" "$CURRENT_SHA" | tr '\n' ' ')"
+          fi
+
+          if [ -z "$FILES" ]; then
+            echo "No se han detectado ficheros cambiados. Usando todos los ficheros trackeados."
+            FILES="$(git ls-files | tr '\n' ' ')"
+          fi
+
+          echo "files=$FILES" >> $GITHUB_OUTPUT
+
+      - name: Run LintGPT
+        id: lintgpt
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          FILES="${{ steps.changed.outputs.files }}"
+
+          echo "@calaespi @${{ github.actor }} informe de LintGPT para este push:" > lintgpt-report.md
+          echo "" >> lintgpt-report.md
+          echo '```' >> lintgpt-report.md
+
+          # Ejecuta LintGPT sobre los ficheros cambiados
+          set +e
+          npx lintgpt $FILES >> lintgpt-report.md 2>&1
+          EXIT_CODE=$?
+          set -e
+
+          echo '```' >> lintgpt-report.md
+
+          echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+
+      - name: Comment LintGPT report on commit
+        uses: peter-evans/commit-comment@v4
+        with:
+          sha: ${{ github.sha }}
+          body-path: lintgpt-report.md
+
+      # Opcional: si quieres que LintGPT pueda hacer fallar el check
+      - name: Fail if LintGPT found issues
+        if: steps.lintgpt.outputs.exit_code != '0'
+        run: |
+          echo "LintGPT ha devuelto código de salida distinto de 0."
+          exit 1
